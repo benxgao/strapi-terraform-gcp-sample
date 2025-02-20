@@ -1,0 +1,15 @@
+steps:
+  - name: 'gcr.io/coworkout-250306/strapi-image-local '
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/coworkout-250306/strapi-image-local'
+      - '.'
+    timeout: '7200s'
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'gcr.io/coworkout-250306/strapi-image-local'
+images:
+  - 'gcr.io/coworkout-250306/strapi-image-local'
+# gcloud builds submit --config cloudbuild.yaml --substitutions=REGION="us-central1",PROJECT_ID="coworkout-250306"
