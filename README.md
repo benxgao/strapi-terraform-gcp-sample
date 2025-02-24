@@ -2,9 +2,9 @@
 
 ## backend - stripi-server
 
-### Start strpi
+### Local
 
-#### Attempt 1
+#### Attempt 1 (failed)
 
 ```bash
 npx create-strapi@latest strapi-server
@@ -19,27 +19,39 @@ npm run develop
 
 ```
 
-#### Attempt 2
+#### Attempt 2 (succeeded)
 
 ```bash
 
 npx @strapi-community/dockerize new --dbclient=postgres --dbhost=localhost --dbport=5432 --dbname=strapi --dbusername=strapi --dbpassword=strapi --projecttype=ts --packagemanager=npm --usecompose=true --env=both
 
+# first run, or dockerfile/package.json is updated
 docker-compose up --build
-docker-compose up
+# for refresh
+docker compose up --build --force-recreate
+
+
+# dev
+docker-compose up # docker-compose watch
 docker-compose down
-```
 
-## frontend - next-app
+# when code is updated
+docker compose restart mystrapi
+docker compose restart
 
-### Start next
 
-```bash
 ```
 
 ## infrastruture - terraform
 
-### Deploy
+### Attempt 1
 
 ```bash
+gcloud builds submit --config cloudbuild.yaml 
+```
+
+### Attempt 2
+
+```bash
+docker build -f Dockerfile.prod -t "australia-southeast1-docker.pkg.dev/coworkout-20230409/mystrapi-repository/node-app:latest" .
 ```
