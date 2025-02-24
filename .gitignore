@@ -11,6 +11,10 @@ gcp_credentials.json
 
 ### https://raw.github.com/github/gitignore/90f149de451a5433aebd94d02d11b0e28843a1af/Terraform.gitignore
 
+# strapi
+**/backup
+
+
 # Local .terraform directories
 **/.terraform/*
 

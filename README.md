@@ -4,6 +4,8 @@
 
 ### Start strpi
 
+#### Attempt 1
+
 ```bash
 npx create-strapi@latest strapi-server
 
@@ -15,6 +17,17 @@ docker exec -it postgres145 psql -h localhost -U postgres
 
 npm run develop
 
+```
+
+#### Attempt 2
+
+```bash
+
+npx @strapi-community/dockerize new --dbclient=postgres --dbhost=localhost --dbport=5432 --dbname=strapi --dbusername=strapi --dbpassword=strapi --projecttype=ts --packagemanager=npm --usecompose=true --env=both
+
+docker-compose up --build
+docker-compose up
+docker-compose down
 ```
 
 ## frontend - next-app
