@@ -57,51 +57,6 @@ gcloud builds submit --config cloudbuild.yaml --substitutions=REGION="${REGION}"
 gcloud artifacts docker images list "$REGION-docker.pkg.dev/$PROJECT_ID/node-app-repo"
 ```
 
-## Build and publish docker image (deprecated)
+## links
 
-### 1. Authenticate with gcloud
-
-gcloud auth login
-gcloud auth configure-docker #If you haven't done this before.
-gcloud config set project <YOUR_GCP_PROJECT_ID>
-
-### 2. Build the Docker image locally (optional, but good for testing)
-
-docker build -t gcr.io/<YOUR_GCP_PROJECT_ID>/node-app:latest .
-
-### 3. Push the Docker image to Google Container Registry (GCR)
-
-docker push gcr.io/<YOUR_GCP_PROJECT_ID>/node-app:latest
-
-### Alternative: Using Cloud Build (recommended for CI/CD)
-
-gcloud builds submit --tag gcr.io/<YOUR_GCP_PROJECT_ID>/node-app:latest .
-
-### Verify the image (optional)
-
-gcloud container images list --repository gcr.io/<YOUR_GCP_PROJECT_ID>/node-app
-
-### Example using the Cloud Build YAML file
-
-```bash
-cat <<EOF > cloudbuild.yaml
-steps:
-  - name: "gcr.io/cloud-builders/docker"
-    args:
-      - "build"
-      - "-t"
-      - "gcr.io/<YOUR_GCP_PROJECT_ID>/node-app:latest"
-      - "."
-    timeout: "7200s"
-  - name: "gcr.io/cloud-builders/docker"
-    args:
-      - "push"
-      - "gcr.io/<YOUR_GCP_PROJECT_ID>/node-app:latest"
-images:
-  - "gcr.io/<YOUR_GCP_PROJECT_ID>/node-app:latest"
-EOF
-```
-
-```bash
-gcloud builds submit --config cloudbuild.yaml .
-```
+[GCP deployment](https://medium.com/google-cloud/strapi-headless-cms-google-cloud-run-and-postgresql-6126b597b10c)
