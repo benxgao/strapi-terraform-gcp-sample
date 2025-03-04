@@ -1,4 +1,4 @@
-project_id = "coworkout-20230409"
+project_id = "coworkout-250305"
 
 database_username = "strapi"
 database_password = "strapi"

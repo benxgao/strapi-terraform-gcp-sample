@@ -1,5 +1,11 @@
 # GCP
 
+## ref
+
+[](https://medium.com/google-cloud/strapi-headless-cms-google-cloud-run-and-postgresql-6126b597b10c)
+
+## steps
+
 ```bash
 gcloud compute networks vpc-access connectors create sample-servless-connector \
 --network=vpc-sample-network \
