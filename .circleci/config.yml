@@ -1,0 +1,172 @@
+version: 2.1
+
+commands:
+  terraform_init_plan_apply:
+    description: 'Plan Terraform deployment'
+    parameters:
+      env:
+        type: string
+    steps:
+      - run:
+          name: Terraform Init and Plan
+          command: |
+            cd terraform/environments/<< parameters.env >>
+            terraform init -input=false
+            terraform plan -out=tfplan
+          environment:
+            GOOGLE_APPLICATION_CREDENTIALS: /root/.gcp/credentials.json
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
+  terraform_apply:
+    description: 'Apply Terraform deployment'
+    parameters:
+      env:
+        type: string
+    steps:
+      - run:
+          name: Terraform Apply
+          command: |
+            cd terraform/environments/<< parameters.env >>
+            terraform apply -auto-approve tfplan
+          environment:
+            GOOGLE_APPLICATION_CREDENTIALS: /root/.gcp/credentials.json
+      - run:
+          name: Retrieve Instance ID
+          command: |
+            terraform refresh
+            INSTANCE_ID=$(terraform output -raw instance_id)
+            echo "The instance ID is: $INSTANCE_ID"
+
+  # terraform_plan_destroy:
+  #   description: 'Plan Terraform destroy'
+  #   parameters:
+  #     env:
+  #       type: string
+  #   steps:
+  #     - attach_workspace:
+  #         at: .
+  #     - run:
+  #         name: Terraform Create Destroy Plan
+  #         command: |
+  #           cd terraform/environments/<< parameters.env >>
+  #           terraform plan -destroy -out=tfplan-destroy
+  #         environment:
+  #           GOOGLE_APPLICATION_CREDENTIALS: /root/.gcp/credentials.json
+  #     - persist_to_workspace:
+  #         root: .
+  #         paths:
+  #           - .
+
+  # terraform_destroy:
+  #   description: 'Destroy Terraform deployment'
+  #   parameters:
+  #     env:
+  #       type: string
+  #   steps:
+  #     - attach_workspace:
+  #         at: .
+  #     - run:
+  #         name: Terraform Destroy
+  #         command: |
+  #           cd terraform/environments/<< parameters.env >>
+  #           terraform apply -auto-approve tfplan-destroy
+  #         environment:
+  #           GOOGLE_APPLICATION_CREDENTIALS: /root/.gcp/credentials.json
+
+jobs:
+  deploy_strapi_in_staging:
+    docker:
+      - image: node:18
+    steps:
+      - checkout
+      # - run:
+      #     name: Install Strapi dependencies
+      #     command: |
+      #       cd strapi-server
+      #       npm install
+      - run:
+          name: Build and push Docker image
+          command: |
+            cd strapi-server
+            gcloud builds submit --tag us-central1-docker.pkg.dev/coworkout-250306/strapi-docker-repo/strapi-image-local:latest
+
+  deploy_staging_terraform_apply:
+    docker:
+      - image: hashicorp/terraform:light
+    steps:
+      - checkout
+      - run:
+          name: Setup GCP Credentials
+          command: |
+            mkdir -p /root/.gcp
+            echo $GOOGLE_APPLICATION_CREDENTIALS > /root/.gcp/credentials.json
+      - terraform_init_plan_apply:
+          env: staging
+      - terraform_apply:
+          env: staging
+
+  # deploy_staging_destroy:
+  #   docker:
+  #     - image: hashicorp/terraform:light
+  #   steps:
+  #     - checkout
+  #     - run:
+  #         name: Setup GCP Credentials
+  #         command: |
+  #           mkdir -p /root/.gcp
+  #           echo $GOOGLE_APPLICATION_CREDENTIALS > /root/.gcp/credentials.json
+  #     - terraform_plan_destroy:
+  #         env: staging
+  #     - terraform_destroy:
+  #         env: staging
+
+workflows:
+  strapi_deploy:
+    jobs:
+      - start_strapi_in_staging:
+          type: approval
+          filters:
+            branches:
+              only:
+                - strapi_staging
+      - deploy_strapi_in_staging:
+          requires:
+            - start_strapi_staging
+          filters:
+            branches:
+              only:
+                - strapi_staging
+
+  terraform_deploy:
+    jobs:
+      - start_staging_terraform:
+          type: approval
+          filters:
+            branches:
+              only:
+                - terraform_staging
+      - deploy_staging_terraform_apply:
+          requires:
+            - start_staging_terraform:
+          filters:
+            branches:
+              only:
+                - terraform_staging
+      # - hold_staging_destroy:
+      #     type: approval
+      #     requires:
+      #       - deploy_staging_terraform_apply
+      #     filters:
+      #       branches:
+      #         only:
+      #           - terraform_staging
+      # - deploy_staging_destroy:
+      #     requires:
+      #       - hold_staging_destroy
+      #     filters:
+      #       branches:
+      #         only:
+      #           - terraform_staging
