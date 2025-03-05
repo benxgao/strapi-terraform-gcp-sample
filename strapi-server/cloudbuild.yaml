@@ -1,15 +1,15 @@
 steps:
-  - name: 'gcr.io/cloud-builders/docker'
+  - name: 'gcr.io/coworkout-250305/strapi-image-local '
     args:
       - 'build'
       - '-t'
-      - 'australia-southeast1-docker.pkg.dev/coworkout-250305/mystrapi-repository/strapi_server:latest'
+      - 'gcr.io/coworkout-250305/strapi-image-local'
       - '.'
     timeout: '7200s'
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
-      - 'australia-southeast1-docker.pkg.dev/coworkout-250305/mystrapi-repository/strapi_server:latest'
+      - 'gcr.io/coworkout-250305/strapi-image-local'
 images:
-  - 'australia-southeast1-docker.pkg.dev/coworkout-250305/mystrapi-repository/strapi_server:latest'
-# gcloud builds submit --config cloudbuild.yaml --substitutions=REGION="australia-southeast1",PROJECT_ID="coworkout-250305"
+  - 'gcr.io/coworkout-250305/strapi-image-local'
+# gcloud builds submit --config cloudbuild.yaml --substitutions=REGION="us-central1",PROJECT_ID="coworkout-250305"
