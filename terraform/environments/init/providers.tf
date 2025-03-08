@@ -12,10 +12,10 @@ terraform {
   }
 
   # gcloud auth login
-  # gcloud storage buckets create gs://coworkout-250307  --location=australia-southeast1
+  # gcloud storage buckets create gs://coworkout-250307  --location=us-central1
   backend "gcs" {
     bucket = "coworkout-250307"
-    prefix = "terraform/state/staging"
+    prefix = "terraform/state/init"
   }
 }
 

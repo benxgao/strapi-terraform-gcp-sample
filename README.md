@@ -1,57 +1,99 @@
-# coworkout-strapi
+# Strapi on GCP with Terraform
 
-## backend - stripi-server
+A production-ready infrastructure setup for deploying Strapi CMS on Google Cloud Platform using Terraform and CircleCI.
 
-### Local
+## 🚀 Quick Start
 
-#### Attempt 1 (failed)
+### Prerequisites
 
-```bash
-npx create-strapi@latest strapi-server
+- Docker Desktop
+- Node.js 18+
+- Terraform 1.0+
+- GCP Account
+- CircleCI Account (for CI/CD)
 
-docker pull postgres:14.5
-# docker run -d --name postgres145 -p 5432:5432 -e POSTGRES_PASSWORD=admin postgres:14.5
-docker run -d --name postgres145 -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust postgres:14.5
-
-docker exec -it postgres145 psql -h localhost -U postgres
-
-npm run develop
-
-```
-
-#### Attempt 2 (succeeded)
+### Local Development
 
 ```bash
+# Clone the repository
+git clone https://github.com/benxgao/strapi-terraform-gcp.git
+cd strapi-terraform-gcp
 
-npx @strapi-community/dockerize new --dbclient=postgres --dbhost=localhost --dbport=5432 --dbname=strapi --dbusername=strapi --dbpassword=strapi --projecttype=ts --packagemanager=npm --usecompose=true --env=both
-
-# first run, or dockerfile/package.json is updated
+# Start Strapi development server
+cd strapi-server
 docker-compose up --build
-# for refresh
-docker compose up --build --force-recreate
-
-
-# dev
-docker-compose up # docker-compose watch
-docker-compose down
-
-# when code is updated
-docker compose restart mystrapi
-docker compose restart
-
-
 ```
 
-## infrastruture - terraform
+## 🏗 Infrastructure Setup
 
-### Attempt 1
+### Initial GCP Setup
 
 ```bash
-gcloud builds submit --config cloudbuild.yaml 
+# Initialize GCP infrastructure
+cd terraform/environments/init
+terraform init
+terraform plan
+terraform apply
 ```
 
-### Attempt 2
+### Staging Environment
 
 ```bash
-docker build -f Dockerfile.prod -t "australia-southeast1-docker.pkg.dev/coworkout-250306/mystrapi-repository/node-app:latest" .
+# Deploy to staging
+cd terraform/environments/staging
+terraform init
+terraform plan
+terraform apply
 ```
+
+## 🔄 CI/CD Pipeline
+
+### Manual Deployment
+
+```bash
+# Deploy infrastructure changes
+git checkout terraform-staging
+git push
+
+# Deploy Strapi application
+git checkout strapi-staging
+git push
+```
+
+### Automated Deployment
+
+The project uses CircleCI for automated deployments:
+
+- Infrastructure changes trigger on `terraform-staging` branch
+- Application updates trigger on `strapi-staging` branch
+
+## 📚 Documentation
+
+- [Infrastructure Setup Guide](docs/terraform.md)
+- [GCP Configuration](docs/gcp.md)
+- [CI/CD Pipeline](docs/cicd.md)
+
+## 🙏 Acknowledgments
+
+This project is built upon the excellent work and guidance provided in the article:
+
+- [Strapi Headless CMS + Google Cloud Run and PostgreSQL](https://medium.com/google-cloud/strapi-headless-cms-google-cloud-run-and-postgresql-6126b597b10c) by Prashant Sharma
+
+The article provided the foundation for our GCP infrastructure setup, which we've extended with:
+
+- Terraform Infrastructure as Code
+- CircleCI Integration
+- Production-ready configurations
+- Automated deployment pipelines
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
