@@ -53,5 +53,5 @@ gcloud builds submit --config cloudbuild.yaml
 ### Attempt 2
 
 ```bash
-docker build -f Dockerfile.prod -t "australia-southeast1-docker.pkg.dev/coworkout-250306/mystrapi-repository/node-app:latest" .
+docker build -f Dockerfile.prod -t "australia-southeast1-docker.pkg.dev/coworkout-250307/mystrapi-repository/node-app:latest" .
 ```

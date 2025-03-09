@@ -91,7 +91,7 @@ jobs:
           name: Build and push Docker image
           command: |
             cd strapi-server
-            gcloud builds submit --tag us-central1-docker.pkg.dev/coworkout-250306/strapi-docker-repo/strapi-image-local:latest
+            gcloud builds submit --tag us-central1-docker.pkg.dev/coworkout-250307/strapi-docker-repo/strapi-image-local:latest
 
   deploy_staging_terraform_apply:
     docker:
