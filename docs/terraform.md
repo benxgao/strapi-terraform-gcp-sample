@@ -45,13 +45,18 @@ vpcaccess.googleapis.com
   - Cloud SQL Admin
   - Cloud Run Admin
 
-- Enable IAM API - [](https://console.cloud.google.com/apis/library/iam.googleapis.com?project=coworkout-250307)
-- Enable Compute Engine API - [](https://console.cloud.google.com/apis/library/compute.googleapis.com?project=coworkout-250307)
-- Enable Cloud resource manager API - [](https://console.cloud.google.com/apis/library/cloudresourcemanager.googleapis.com?project=coworkout-250307)
-- Enable Serverless VPC API = [](https://console.cloud.google.com/apis/library/vpcaccess.googleapis.com?project=coworkout-250307)
-- Enable Service managing API = [](https://console.cloud.google.com/apis/library/servicenetworking.googleapis.com?project=coworkout-250307)
-- Enable Cloud SQL API - [](https://console.cloud.google.com/apis/library/sqladmin.googleapis.com?project=coworkout-250307)
-- Enable Cloud Run Admin API - [](https://console.cloud.google.com/apis/library/run.googleapis.com?project=coworkout-250307)
-- Enable Cloud Build API - [](https://console.cloud.google.com/apis/library/cloudbuild.googleapis.com?project=coworkout-250307)
+- Run commands in artifact_registry.md to upload latest built strapi docker image
 
-Run commands in artifact_registry.md to upload latest built strapi docker image
+- To deploy the latest Strapi commits, run the following commands
+  - gcloud builds submit --tag us-central1-docker.pkg.dev/coworkout-250307/strapi-docker-repo/strapi-image-local:latest
+  - gcloud run deploy strapi-image-local \
+--image=us-central1-docker.pkg.dev/coworkout-250307/strapi-docker-repo/strapi-image-local:latest \
+--allow-unauthenticated \
+--vpc-connector=sample-servless-connector \
+--region=us-central1 \
+--vpc-egress=private-ranges-only \
+--port=1337 \
+--memory=2Gi \
+--service-account=strapi \
+--set-env-vars='^#^APP_KEYS=dvVL5fy+Y7YqhhbG2G/o9w==,+4FuGgS0J+isorche9DGmA==,eyX22XP9yxhHTSfpxa+5kQ==,9yf96xUfnE8fGL7zADY7MQ==' --set-env-vars=API_TOKEN_SALT=fzfyMtPc3NaPHVAWjmWPfw== --set-env-vars='ADMIN_JWT_SECRET=IJL8hF/vViCh8NKE7Wsv5A==' --set-env-vars='TRANSFER_TOKEN_SALT=b1VenQ/VZANQi8qLkM6+Kg==' --set-env-vars=DATABASE_HOST=10.30.96.3 \
+--project=coworkout-250307

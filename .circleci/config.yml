@@ -1,6 +1,11 @@
 version: 2.1
 
+# Environment Variables
+# CLOUDSDK_CORE_PROJECT
+# GOOGLE_APPLICATION_CREDENTIALS
+
 commands:
+  # ********************** terraform plan **************************************
   terraform_init_plan_apply:
     description: 'Plan Terraform deployment'
     parameters:
@@ -20,6 +25,7 @@ commands:
           paths:
             - .
 
+  # ********************** terraform apply **************************************
   terraform_apply:
     description: 'Apply Terraform deployment'
     parameters:
@@ -40,58 +46,74 @@ commands:
             INSTANCE_ID=$(terraform output -raw instance_id)
             echo "The instance ID is: $INSTANCE_ID"
 
-  # terraform_plan_destroy:
-  #   description: 'Plan Terraform destroy'
-  #   parameters:
-  #     env:
-  #       type: string
-  #   steps:
-  #     - attach_workspace:
-  #         at: .
-  #     - run:
-  #         name: Terraform Create Destroy Plan
-  #         command: |
-  #           cd terraform/environments/<< parameters.env >>
-  #           terraform plan -destroy -out=tfplan-destroy
-  #         environment:
-  #           GOOGLE_APPLICATION_CREDENTIALS: /root/.gcp/credentials.json
-  #     - persist_to_workspace:
-  #         root: .
-  #         paths:
-  #           - .
+  # ********************** gcloud builds **************************************
+  gcloud_builds:
+    description: 'Build and push Strapi to Cloud Artifact Registry'
+    parameters:
+      env:
+        type: string
+    steps:
+      - run:
+          name: Build and push Strapi to Cloud Artifact Registry
+          command: |
+            cd strapi-server
+            gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
 
-  # terraform_destroy:
-  #   description: 'Destroy Terraform deployment'
-  #   parameters:
-  #     env:
-  #       type: string
-  #   steps:
-  #     - attach_workspace:
-  #         at: .
-  #     - run:
-  #         name: Terraform Destroy
-  #         command: |
-  #           cd terraform/environments/<< parameters.env >>
-  #           terraform apply -auto-approve tfplan-destroy
-  #         environment:
-  #           GOOGLE_APPLICATION_CREDENTIALS: /root/.gcp/credentials.json
+            echo "node_modules" > .gcloudignore
+            echo ".git" >> .gcloudignore
+            echo ".env*" >> .gcloudignore
+
+            gcloud builds submit \
+              --tag us-central1-docker.pkg.dev/$CLOUDSDK_CORE_PROJECT/strapi-docker-repo/strapi-image-local:latest \
+              --gcs-log-dir=gs://cloud-build-logs-$CLOUDSDK_CORE_PROJECT/logs
+          environment:
+            GOOGLE_APPLICATION_CREDENTIALS: ${HOME}/.gcp/credentials.json
+
+  # ********************** gcloud run deploy **************************************
+  gcloud_run_deploy:
+    description: 'Deploy Strapi to Cloud Run'
+    parameters:
+      env:
+        type: string
+    steps:
+      - run:
+          name: Deploy Strapi to Cloud Run
+          command: |
+            chmod +x ./scripts/deploy_run.sh
+            ./scripts/deploy_run.sh
+          environment:
+            GOOGLE_APPLICATION_CREDENTIALS: ${HOME}/.gcp/credentials.json
 
 jobs:
   deploy_strapi_in_staging:
     docker:
-      - image: node:18
+      - image: cimg/gcp:2025.01
     steps:
       - checkout
+      - run: gcloud --version
+      - run:
+          name: Setup GCP Authentication
+          command: |
+            mkdir -p ${HOME}/.gcp
+            echo $GOOGLE_APPLICATION_CREDENTIALS > ${HOME}/.gcp/credentials.json
+            gcloud auth activate-service-account --key-file=${HOME}/.gcp/credentials.json
+            gcloud config set project $CLOUDSDK_CORE_PROJECT
+          # environment:
+          #   GOOGLE_APPLICATION_CREDENTIALS: ${HOME}/.gcp/credentials.json
+      - gcloud_builds:
+          env: staging
+      - gcloud_run_deploy:
+          env: staging
       # - run:
-      #     name: Install Strapi dependencies
+      #     name: Build and push Strapi to Cloud Artifact Registry
       #     command: |
       #       cd strapi-server
-      #       npm install
-      - run:
-          name: Build and push Docker image
-          command: |
-            cd strapi-server
-            gcloud builds submit --tag us-central1-docker.pkg.dev/coworkout-250307/strapi-docker-repo/strapi-image-local:latest
+      #       gcloud builds submit --tag us-central1-docker.pkg.dev/coworkout-250307/strapi-docker-repo/strapi-image-local:latest
+      # - run:
+      #     name: Deploy Strapi to Cloud Run
+      #     command: |
+      #       chmod +x ./scripts/deploy_run.sh
+      #       ./scripts/deploy_run.sh
 
   deploy_staging_terraform_apply:
     docker:
@@ -104,24 +126,9 @@ jobs:
             mkdir -p /root/.gcp
             echo $GOOGLE_APPLICATION_CREDENTIALS > /root/.gcp/credentials.json
       - terraform_init_plan_apply:
-          env: staging
+          env: staging # terraform/environments/staging
       - terraform_apply:
-          env: staging
-
-  # deploy_staging_destroy:
-  #   docker:
-  #     - image: hashicorp/terraform:light
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: Setup GCP Credentials
-  #         command: |
-  #           mkdir -p /root/.gcp
-  #           echo $GOOGLE_APPLICATION_CREDENTIALS > /root/.gcp/credentials.json
-  #     - terraform_plan_destroy:
-  #         env: staging
-  #     - terraform_destroy:
-  #         env: staging
+          env: staging # terraform/environments/staging
 
 workflows:
   strapi_deploy:
@@ -131,14 +138,14 @@ workflows:
           filters:
             branches:
               only:
-                - strapi_staging
+                - strapi-staging
       - deploy_strapi_in_staging:
-          requires:
-            - start_strapi_staging
+          # requires:
+          #   - start_strapi_in_staging
           filters:
             branches:
               only:
-                - strapi_staging
+                - strapi-staging
 
   terraform_deploy:
     jobs:
@@ -147,26 +154,11 @@ workflows:
           filters:
             branches:
               only:
-                - terraform_staging
+                - terraform-staging
       - deploy_staging_terraform_apply:
           requires:
-            - start_staging_terraform:
+            - start_staging_terraform
           filters:
             branches:
               only:
-                - terraform_staging
-      # - hold_staging_destroy:
-      #     type: approval
-      #     requires:
-      #       - deploy_staging_terraform_apply
-      #     filters:
-      #       branches:
-      #         only:
-      #           - terraform_staging
-      # - deploy_staging_destroy:
-      #     requires:
-      #       - hold_staging_destroy
-      #     filters:
-      #       branches:
-      #         only:
-      #           - terraform_staging
+                - terraform-staging
