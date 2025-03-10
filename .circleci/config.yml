@@ -98,22 +98,10 @@ jobs:
             echo $GOOGLE_APPLICATION_CREDENTIALS > ${HOME}/.gcp/credentials.json
             gcloud auth activate-service-account --key-file=${HOME}/.gcp/credentials.json
             gcloud config set project $CLOUDSDK_CORE_PROJECT
-          # environment:
-          #   GOOGLE_APPLICATION_CREDENTIALS: ${HOME}/.gcp/credentials.json
       - gcloud_builds:
           env: staging
       - gcloud_run_deploy:
           env: staging
-      # - run:
-      #     name: Build and push Strapi to Cloud Artifact Registry
-      #     command: |
-      #       cd strapi-server
-      #       gcloud builds submit --tag us-central1-docker.pkg.dev/coworkout-250307/strapi-docker-repo/strapi-image-local:latest
-      # - run:
-      #     name: Deploy Strapi to Cloud Run
-      #     command: |
-      #       chmod +x ./scripts/deploy_run.sh
-      #       ./scripts/deploy_run.sh
 
   deploy_staging_terraform_apply:
     docker:
