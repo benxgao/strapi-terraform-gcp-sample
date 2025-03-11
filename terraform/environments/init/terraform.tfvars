@@ -1,1 +1,1 @@
-project_id = "coworkout-250307"
+project_id = "[gcp_project_id]"

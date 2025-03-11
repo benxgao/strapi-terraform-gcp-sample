@@ -1,23 +1,9 @@
 #!/bin/bash
+
 set -e
 
-# This script deploys the Cloud Run service.
-# It uses the deployment command as shown in the last section of docs/gcp.md.
-# Please adjust the parameters below as needed.
-
-# Define your variables
-# SERVICE_NAME="strapi-image-local"
-# IMAGE="gcr.io/your-project-id/your-image:latest"
-# REGION="us-central1"  # update this if necessary
-
-# Deploy to Cloud Run
-# gcloud run deploy "$SERVICE_NAME" \
-#     --image "$IMAGE" \
-#     --platform managed \
-#     --region "$REGION" \
-#     --allow-unauthenticated
 gcloud run deploy strapi-image-local \
---image=us-central1-docker.pkg.dev/coworkout-250307/strapi-docker-repo/strapi-image-local:latest \
+--image=us-central1-docker.pkg.dev/[gcp_project_id]/strapi-docker-repo/strapi-image-local:latest \
 --allow-unauthenticated \
 --vpc-connector=sample-servless-connector \
 --region=us-central1 \
@@ -30,7 +16,4 @@ gcloud run deploy strapi-image-local \
 --set-env-vars='ADMIN_JWT_SECRET=IJL8hF/vViCh8NKE7Wsv5A==' \
 --set-env-vars='TRANSFER_TOKEN_SALT=b1VenQ/VZANQi8qLkM6+Kg==' \
 --set-env-vars=DATABASE_HOST=10.68.176.3 \
---project=coworkout-250307
-
-
-    
+--project=[gcp_project_id]

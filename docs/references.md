@@ -1,13 +1,13 @@
-# GCP
+# GCP notes
 
-## ref
+## reference
 
 [](https://medium.com/google-cloud/strapi-headless-cms-google-cloud-run-and-postgresql-6126b597b10c)
 
 ## steps
 
 ```bash
-export PROJECT_ID=coworkout-250307
+export PROJECT_ID=[gcp_project_id]
 export REGION=us-central1
 
 gcloud config set project $PROJECT_ID
@@ -71,11 +71,11 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 --role="roles/iam.serviceAccountUser"
 
 ## Build and publish images
-gcloud builds submit --tag us-central1-docker.pkg.dev/coworkout-250307/strapi-docker-repo/strapi-image-local:latest
+gcloud builds submit --tag us-central1-docker.pkg.dev/[gcp_project_id]/strapi-docker-repo/strapi-image-local:latest
 
 ## Deploy instances
 gcloud run deploy strapi-image-local \
---image=us-central1-docker.pkg.dev/coworkout-250307/strapi-docker-repo/strapi-image-local:latest \
+--image=us-central1-docker.pkg.dev/[gcp_project_id]/strapi-docker-repo/strapi-image-local:latest \
 --allow-unauthenticated \
 --vpc-connector=sample-servless-connector \
 --region=us-central1 \
@@ -83,7 +83,7 @@ gcloud run deploy strapi-image-local \
 --port=1337 \
 --memory=2Gi \
 --service-account=strapi \
---set-env-vars='^#^APP_KEYS=dvVL5fy+Y7YqhhbG2G/o9w==,+4FuGgS0J+isorche9DGmA==,eyX22XP9yxhHTSfpxa+5kQ==,9yf96xUfnE8fGL7zADY7MQ==' --set-env-vars=API_TOKEN_SALT=fzfyMtPc3NaPHVAWjmWPfw== --set-env-vars='ADMIN_JWT_SECRET=IJL8hF/vViCh8NKE7Wsv5A==' --set-env-vars='TRANSFER_TOKEN_SALT=b1VenQ/VZANQi8qLkM6+Kg==' --set-env-vars=DATABASE_HOST=10.30.96.3 \
---project=coworkout-250307
+--set-env-vars='^#^APP_KEYS=dvVL5fy+Y7YqhhbG2G/o9w==,+4FuGgS0J+isorche9DGmA==,eyX22XP9yxhHTSfpxa+5kQ==,9yf96xUfnE8fGL7zADY7MQ==' --set-env-vars=API_TOKEN_SALT=fzfyMtPc3NaPHVAWjmWPfw== --set-env-vars='ADMIN_JWT_SECRET=IJL8hF/vViCh8NKE7Wsv5A==' --set-env-vars='TRANSFER_TOKEN_SALT=b1VenQ/VZANQi8qLkM6+Kg==' --set-env-vars=DATABASE_HOST=[private_ip] \
+--project=[gcp_project_id]
 
 ```

@@ -1,6 +1,17 @@
 # Strapi on GCP with Terraform
 
-A production-ready infrastructure setup for deploying Strapi CMS on Google Cloud Platform using Terraform and CircleCI.
+> A production-ready infrastructure setup for deploying Strapi CMS on Google Cloud Platform using Terraform and CircleCI.
+
+Key features:
+
+- 🚀 Zero-downtime deployments
+- 🔐 Secure infrastructure setup
+- 🌐 Cloud SQL PostgreSQL backend
+- 🔄 CI/CD automation with CircleCI
+- 📦 Container-based deployment
+- 💾 Persistent storage configuration
+- ⚡ Cloud Run serverless hosting
+
 
 ## 🚀 Quick Start
 
